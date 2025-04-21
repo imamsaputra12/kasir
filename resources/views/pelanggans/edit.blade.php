@@ -15,8 +15,11 @@
             <label for="nama_pelanggan" class="block font-medium text-gray-700 mb-2">Nama Pelanggan</label>
             <input type="text" name="nama_pelanggan" id="nama_pelanggan"
                    class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   value="{{ old('nama_pelanggan', $pelanggan->nama_pelanggan) }}" required>
-        </div>
+                   value="{{ old('nama_pelanggan', $pelanggan->nama_pelanggan) }}"
+                   pattern="^[A-Za-z\s]+$"
+                   title="Nama hanya boleh berisi huruf dan spasi"
+                   required>
+        </div>        
 
         <!-- Alamat -->
         <div>

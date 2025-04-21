@@ -80,3 +80,6 @@ Route::get('/send-test-email', 'MailController@sendTestEmail');
 Route::get('/laporans', 'PenjualanController@laporan')->name('laporans.index');
 
 Route::get('/laporans/cetak', 'PenjualanController@cetakLaporan')->name('laporans.cetak');
+
+Route::resource('profiles', ProfileController::class);
+

@@ -27,73 +27,79 @@ class PenjualanController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'pelanggan_id' => 'nullable|exists:pelanggans,pelanggan_id',
-            'produk_id' => 'required|array|min:1',
-            'produk_id.*' => 'exists:produks,produk_id',
-            'jumlah' => 'required|array|min:1',
-            'jumlah.*' => 'required|integer|min:1',
-            'jumlah_bayar' => 'required|numeric|min:0',
-            'metode_pembayaran' => 'required|in:cash,transfer,credit_card,e_wallet',
-            'status' => 'required|in:paid,pending,failed',
-        ]);
-    
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-    
-        DB::beginTransaction();
-        try {
-            $totalBayar = 0;
-            $produkTerpilih = [];
-    
-            foreach ($request->produk_id as $key => $produk_id) {
-                $produk = Produk::findOrFail($produk_id);
-                $jumlah = $request->jumlah[$key];
-    
-                if ($produk->stok < $jumlah) {
-                    return redirect()->back()->with('error', "Stok produk {$produk->nama_produk} tidak mencukupi")->withInput();
-                }
-    
-                $produk->stok -= $jumlah;
-                $produk->save();
-    
-                $subtotal = $produk->harga * $jumlah;
-                $totalBayar += $subtotal;
-    
-                $produkTerpilih[] = [
-                    'produk_id' => $produk->produk_id,
-                    'nama_produk' => $produk->nama_produk,
-                    'jumlah' => $jumlah,
-                    'harga' => $produk->harga,
-                    'subtotal' => $subtotal,
-                ];
+{
+    $validator = Validator::make($request->all(), [
+        'pelanggan_id' => 'nullable|exists:pelanggans,pelanggan_id',
+        'produk_id' => 'required|array|min:1',
+        'produk_id.*' => 'exists:produks,produk_id',
+        'jumlah' => 'required|array|min:1',
+        'jumlah.*' => 'required|integer|min:1',
+        'jumlah_bayar' => 'required|numeric|min:0',
+        'metode_pembayaran' => 'required|in:cash,transfer,credit_card,e_wallet',
+        'status' => 'required|in:paid,pending,failed',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
+    }
+
+    DB::beginTransaction();
+    try {
+        $totalBayar = 0;
+        $produkTerpilih = [];
+
+        foreach ($request->produk_id as $key => $produk_id) {
+            $produk = Produk::findOrFail($produk_id);
+            $jumlah = $request->jumlah[$key];
+
+            if ($produk->stok < $jumlah) {
+                return redirect()->back()->with('error', "Stok produk {$produk->nama_produk} tidak mencukupi")->withInput();
             }
-    
-            if ($request->jumlah_bayar < $totalBayar && $request->status == 'lunas') {
-                return redirect()->back()->with('error', "Status tidak boleh 'lunas' jika jumlah bayar kurang dari total.")->withInput();
-            }
-    
-            $penjualan = Penjualan::create([
-                'pelanggan_id' => $request->pelanggan_id,
-                'produk_id' => json_encode($produkTerpilih),
-                'kode_pembayaran' => $this->generateKodePembayaran(),
-                'tanggal_penjualan' => Carbon::now(),
-                'total_bayar' => $totalBayar,
-                'jumlah_bayar' => $request->jumlah_bayar,
-                'kembalian' => $request->jumlah_bayar - $totalBayar,
-                'metode_pembayaran' => $request->metode_pembayaran,
-                'status' => $request->status,
-            ]);
-    
-            DB::commit();
-            return redirect()->route('penjualans.index')->with('success', 'Transaksi berhasil');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+
+            $produk->stok -= $jumlah;
+            $produk->save();
+
+            $subtotal = $produk->harga * $jumlah;
+            $totalBayar += $subtotal;
+
+            $produkTerpilih[] = [
+                'produk_id' => $produk->produk_id,
+                'nama_produk' => $produk->nama_produk,
+                'jumlah' => $jumlah,
+                'harga' => $produk->harga,
+                'subtotal' => $subtotal,
+            ];
         }
-    }    
+
+        if ($request->jumlah_bayar < $totalBayar && $request->status == 'lunas') {
+            return redirect()->back()->with('error', "Status tidak boleh 'lunas' jika jumlah bayar kurang dari total.")->withInput();
+        }
+
+        $tanggalPenjualan = Carbon::parse($request->tanggal_penjualan);
+
+        $penjualan = Penjualan::create([
+            'pelanggan_id' => $request->pelanggan_id,
+            'produk_id' => json_encode($produkTerpilih),
+            'kode_pembayaran' => $this->generateKodePembayaran(),
+            'tanggal_penjualan' => $tanggalPenjualan,
+            'total_bayar' => $totalBayar,
+            'jumlah_bayar' => $request->jumlah_bayar,
+            'kembalian' => $request->jumlah_bayar - $totalBayar,
+            'metode_pembayaran' => $request->metode_pembayaran,
+            'status' => $request->status,
+        ]);        
+
+        DB::commit();
+
+        return redirect()->route('penjualans.index', [
+            'tanggal_awal' => $tanggalPenjualan->format('Y-m-d'),
+            'tanggal_akhir' => $tanggalPenjualan->format('Y-m-d'),
+        ])->with('success', 'Transaksi berhasil');        
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+    }
+}    
     
 
     public function edit($id)

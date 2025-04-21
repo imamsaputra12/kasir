@@ -39,7 +39,7 @@
                                class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 text-xs rounded-md transition">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ route('produks.destroy', $produk->produk_id) }}" method="POST">
+                            <form action="{{ route('produks.destroy', $produk->produk_id) }}" method="POST" onsubmit="return confirmDelete()">
                                 {{ csrf_field() }}
                                 <input type="hidden" name="_method" value="delete">
                                 <button type="submit"
@@ -81,6 +81,12 @@
         });
         @endif
     });
+</script>
+
+<script>
+    function confirmDelete() {
+        return confirm("Apakah Anda yakin ingin menghapus produk ini?");
+    }
 </script>
 
 @endsection

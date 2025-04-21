@@ -23,4 +23,5 @@ public function produk()
 {
     return $this->belongsTo(Produk::class, 'produk_id', 'produk_id');
 }
+
 }

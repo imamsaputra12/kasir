@@ -77,18 +77,19 @@
 
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav mr-auto">
+                @can('admin')
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center" href="{{ route('dashboard') }}">
                         <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
                     </a>
                 </li>
-                @can('admin')
+                
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center" href="{{ route('pelanggans.index') }}">
                         <i class="fas fa-users mr-2"></i> Pelanggan
                     </a>
                 </li>
-                @endcan
+               @endcan
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center" href="{{ route('produks.index') }}">
                         <i class="fas fa-box mr-2"></i> Produk
@@ -120,12 +121,13 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
-                        <img src="{{ asset('assets/images/avatar-1.jpg') }}" alt="User" class="user-avatar-md rounded-circle" style="width: 35px; height: 35px; margin-right: 8px;">
+                        <!-- Gambar Profil User -->
+                        <img src="{{ Auth::user()->profile && Auth::user()->profile->image ? asset('storage/profiles/' . Auth::user()->profile->image) : asset('assets/images/avatar-1.jpg') }}" 
+                             alt="User" class="user-avatar-md rounded-circle" style="width: 35px; height: 35px; margin-right: 8px;">
                         <span>{{ Auth::user()->name ?? 'Guest' }}</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                        <a class="dropdown-item" href="{{ route('account.show') }}">Account</a>
-                        <a class="dropdown-item" href="#">Setting</a>
+                        <a class="dropdown-item" href="{{ route('profiles.index') }}">Profile</a>
                         <a class="dropdown-item" href="#" onclick="event.preventDefault(); 
                             if(confirm('Apakah Anda yakin ingin logout?')) 
                             document.getElementById('logout-form').submit();">Logout</a>
@@ -134,7 +136,7 @@
                         </form>
                     </div>
                 </li>
-            </ul>
+            </ul>            
         </div>
     </nav>
 

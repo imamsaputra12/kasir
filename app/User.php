@@ -37,4 +37,10 @@ class User extends Authenticatable
     {
         return $this->role === 'kasir';
     }
+
+    public function profiles()
+{
+    return $this->hasMany(Profile::class, 'user_id', 'id');
+}
+
 }

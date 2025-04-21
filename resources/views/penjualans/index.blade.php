@@ -88,12 +88,10 @@
                                class="w-24 text-center bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-2 rounded text-xs font-semibold">
                                 Edit
                             </a>
-                            <form action="{{ route('penjualans.destroy', $penjualan->penjualan_id) }}"
-                                  method="POST" onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
+                            <form action="{{ route('penjualans.destroy', $penjualan->penjualan_id) }}" method="POST" id="deleteForm">
                                 {{ csrf_field() }}
                                 <input type="hidden" name="_method" value="delete">
-                                <button type="submit"
-                                        class="w-24 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-xs font-semibold">
+                                <button type="submit" class="w-24 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-xs font-semibold">
                                     Hapus
                                 </button>
                             </form>
@@ -112,4 +110,29 @@
         </table>
     </div>
 </div>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('deleteForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Mencegah form untuk langsung terkirim
+
+        // Menampilkan SweetAlert2
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: 'Data ini akan dihapus secara permanen!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Jika konfirmasi diterima, submit form
+                this.submit();
+            }
+        });
+    });
+</script>
 @endsection

@@ -59,6 +59,12 @@
         </div>
 
         <div>
+            <label class="block font-medium mb-1">Kembalian</label>
+            <input type="text" id="kembalian" name="kembalian" class="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100" readonly>
+        </div>
+        
+
+        <div>
             <label class="block font-medium mb-1">Metode Pembayaran</label>
             <select name="metode_pembayaran" class="w-full border border-gray-300 rounded px-3 py-2">
                 <option value="cash">Cash</option>
@@ -143,4 +149,50 @@ function hitungTotal() {
     document.getElementById("total_bayar").value = total;
 }
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelector("input[name='jumlah_bayar']").addEventListener("input", hitungKembalian);
+    });
+    
+    function hitungKembalian() {
+        let jumlahBayar = parseInt(document.querySelector("input[name='jumlah_bayar']").value) || 0;
+        let totalBayar = parseInt(document.getElementById("total_bayar").value) || 0;
+        let kembalian = jumlahBayar - totalBayar;
+    
+        document.getElementById("kembalian").value = kembalian > 0 ? kembalian : 0;
+    }
+    
+    function updateSubtotal(element) {
+        let produkItem = element.closest(".produk-item");
+        let produkSelect = produkItem.querySelector(".produk-select");
+        let jumlahInput = produkItem.querySelector(".jumlah-input");
+        let subtotalInput = produkItem.querySelector(".subtotal-input");
+    
+        let harga = produkSelect.options[produkSelect.selectedIndex].getAttribute("data-harga");
+        let jumlah = jumlahInput.value;
+    
+        if (harga && jumlah) {
+            subtotalInput.value = harga * jumlah;
+        } else {
+            subtotalInput.value = 0;
+        }
+        hitungTotal();
+    }
+    
+    function hitungTotal() {
+        let total = 0;
+        let subtotalInputs = document.querySelectorAll(".subtotal-input");
+    
+        subtotalInputs.forEach(subtotal => {
+            total += parseInt(subtotal.value) || 0;
+        });
+    
+        document.getElementById("total_bayar").value = total;
+    
+        // Panggil ulang hitung kembalian setiap kali total berubah
+        hitungKembalian();
+    }
+    </script>
+    
 @endsection
